@@ -12,6 +12,9 @@ M1 = 1.0 # masa członu pierwszego
 M2 = 1.0 # masa członu drugiego
 Kp = 1.0 # wzmocnienie członu Kp 
 
+th1_ = 0.0 # wartość zadana kąta przegubu pierwszego (stopnie)
+th2_ = 0.0 # wartość zadana kąta przegubu drugiego (stopnie)
+
 def derives(state, t):
 
     dydx = np. zeros_like(state)
@@ -33,14 +36,14 @@ def derives(state, t):
     
     dydx[0] = state[1]
 
-    dydx[1] = ( + M22*(Kp*state[0] - C12*state[3]
-                - G11) - M12*(Kp*state[2]
+    dydx[1] = ( + M22*(Kp*th1_ - C12*state[3]
+                - G11) - M12*(Kp*th2_
                 - C21*state[1] - G21))/den)
     
     dydx[2] = state[3]
 
-    dydx[3] = ( - M21*(Kp*state[0] - C12*state[3]
-                - G11) + M11(Kp*state[2]
+    dydx[3] = ( - M21*(Kp*th1_ - C12*state[3]
+                - G11) + M11(Kp*th2_
                 - C21*state[1] - G21)/den)
     
     return dydx
