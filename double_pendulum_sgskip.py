@@ -4,7 +4,7 @@ The double pendulum problem
 ===========================
 
 This animation illustrates the double pendulum problem.
-
+Jestem Maciek i jestem fajny hehe
 Double pendulum formula translated from the C code at
 http://www.physics.usyd.edu.au/~wheat/dpend_html/solve_dpend.c
 """
@@ -16,10 +16,10 @@ import scipy.integrate as integrate
 import matplotlib.animation as animation
 
 G = 9.8  # acceleration due to gravity, in m/s^2
-L1 = 1.0  # length of pendulum 1 in m
-L2 = 2.0  # length of pendulum 2 in m
-M1 = 5.0  # mass of pendulum 1 in kg
-M2 = 3.0  # mass of pendulum 2 in kg
+L1 = 5.0  # length of pendulum 1 in m
+L2 = 1.0  # length of pendulum 2 in m
+M1 = 10.0  # mass of pendulum 1 in kg
+M2 = 20.0  # mass of pendulum 2 in kg
 
 
 def derivs(state, t):
