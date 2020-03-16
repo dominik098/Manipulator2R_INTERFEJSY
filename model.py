@@ -8,12 +8,12 @@ import matplotlib.animation as animation
 G = 9.8 # przyspieszenie ziemskie
 L1 = 1.0 # długość członu pierwszego
 L2 = 1.0 # długość członu drugiego
-M1 = 0.5 # masa członu pierwszego
-M2 = 1.0 # masa członu drugiego
+M1 = 3.0 # masa członu pierwszego
+M2 = 2.0 # masa członu drugiego
 Kp = 1.0 # wzmocnienie członu Kp 
 
-th1_ = 12 # wartość zadana kąta przegubu pierwszego (stopnie)
-th2_ = 7 # wartość zadana kąta przegubu drugiego (stopnie)
+th1_ = 92 # wartość zadana kąta przegubu pierwszego (stopnie)
+th2_ = 92 # wartość zadana kąta przegubu drugiego (stopnie)
 
 e1 = 0.0 # wartosc uchybu regulacji przegubu pierwszego
 e2 = 0.0 # wartosc uchybu regulacji przegubu drugiego
@@ -22,6 +22,9 @@ def derivs(state, t):
 
     dydx = np. zeros_like(state)
 
+    e1 = th1_ - state[0]
+    e2 = th2_ - state[2]
+    
     suma = state[0] + state[2]
     
     M11 = (M1 + M2)*L1**2 + M2*L2**2 + 2*M2*L1*L2*cos(state[2])
@@ -39,11 +42,11 @@ def derivs(state, t):
     
     dydx[0] = state[1]
 
-    dydx[1] = ((+ M22*(Kp*th1_ - C12*state[3] - G11) - M12*(Kp*th2_ - C21*state[1] - G21))/den)
+    dydx[1] = ((+ M22*(Kp*e1 - C12*state[3] - G11) - M12*(Kp*e2 - C21*state[1] - G21))/den)
     
     dydx[2] = state[3]
 
-    dydx[3] = ((- M21*(Kp*th1_ - C12*state[3] - G11) + M11*(Kp*th2_ - C21*state[1] - G21))/den)
+    dydx[3] = ((- M21*(Kp*e1 - C12*state[3] - G11) + M11*(Kp*e2 - C21*state[1] - G21))/den)
     
     return dydx
 
@@ -54,9 +57,9 @@ t = np.arange(0, 20, dt)
 
 # th1 i th2 są początkowymi kątami (stopnie)
 # w1 i w2 są początkowymi prędkościami kątowymi (stopnie na sekundę)
-th1 = 0.0
+th1 = 90
 w1 = 0.0
-th2 = 0.0
+th2 = 90
 w2 = 0.0
 
 # stan początkowy
