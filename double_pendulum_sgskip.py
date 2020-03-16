@@ -16,10 +16,10 @@ import scipy.integrate as integrate
 import matplotlib.animation as animation
 
 G = 9.8  # acceleration due to gravity, in m/s^2
-L1 = 5.0  # length of pendulum 1 in m
-L2 = 1.0  # length of pendulum 2 in m
-M1 = 10.0  # mass of pendulum 1 in kg
-M2 = 20.0  # mass of pendulum 2 in kg
+L1 = 1.0  # length of pendulum 1 in m
+L2 = 66.0  # length of pendulum 2 in m
+M1 = 35.0  # mass of pendulum 1 in kg
+M2 = 55.0  # mass of pendulum 2 in kg
 
 
 def derivs(state, t):
