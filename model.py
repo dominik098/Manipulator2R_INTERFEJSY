@@ -8,22 +8,49 @@ import matplotlib.animation as animation
 G = 9.8 # przyspieszenie ziemskie
 L1 = 1.0 # długość członu pierwszego
 L2 = 1.0 # długość członu drugiego
-M1 = 3.0 # masa członu pierwszego
-M2 = 2.0 # masa członu drugiego
-Kp = 1.0 # wzmocnienie członu Kp 
+M1 = 1.0 # masa członu pierwszego
+M2 = 1.0 # masa członu drugiego
 
-th1_ = 92 # wartość zadana kąta przegubu pierwszego (stopnie)
-th2_ = 92 # wartość zadana kąta przegubu drugiego (stopnie)
+Kp1 = 0.2 # wzmocnienie członu proporcjonalnego przegub 1
+Ki1 = 0.0 # wzmocnienie członu całkującego przegub 1
+Kd1 = 0.0 # wzmocnienie członu różniczukjącego przegub 1
+
+Kp2 = 0.2 # wzmocnienie członu proporcjonalnego przegub 2
+Ki2 = 0.0 # wzmocnienie członu całkującego przegub 2
+Kd2 = 0.0 # wzmocnienie członu różniczukjącego przegub 2
+
+th1_ = 10.0 # wartość zadana kąta przegubu pierwszego (stopnie)
+th2_ = 5.0 # wartość zadana kąta przegubu drugiego (stopnie)
 
 e1 = 0.0 # wartosc uchybu regulacji przegubu pierwszego
 e2 = 0.0 # wartosc uchybu regulacji przegubu drugiego
 
+uchyb_poprzedni1 = 0.0 # zmienna buforu uchybu pierwszego
+uchyb_poprzedni2 = 0.0 # zmienna buforu uchyba drugiego
+
+calka1 = 0.0
+calka2 = 0.0
+
 def derivs(state, t):
 
     dydx = np. zeros_like(state)
-
+    
+    global calka1
+    global calka2
+    
+    # regulator PID przegubu pierwszego
     e1 = th1_ - state[0]
+    calka1 = calka1 + e1*dt
+    pochodna1 = (e1 - uchyb_poprzedni1)/dt
+    sterowanie1 = Kp1*e1 + Ki1*calka1 + Kd1*pochodna1
+    uchyb_poprzedni_1 = e1
+
+    # regulator PID przegubu drugiego
     e2 = th2_ - state[2]
+    calka2 = calka2 + e2*dt
+    pochodna2 = (e2 - uchyb_poprzedni2)/dt
+    sterowanie2 = Kp2*e2 + Ki2*calka2 + Kd2*pochodna2
+    uchyb_poprzedni_2 = e2
     
     suma = state[0] + state[2]
     
@@ -42,11 +69,11 @@ def derivs(state, t):
     
     dydx[0] = state[1]
 
-    dydx[1] = ((+ M22*(Kp*e1 - C12*state[3] - G11) - M12*(Kp*e2 - C21*state[1] - G21))/den)
+    dydx[1] = ((+ M22*(sterowanie1 - C12*state[3] - G11) - M12*(sterowanie2 - C21*state[1] - G21))/den)
     
     dydx[2] = state[3]
 
-    dydx[3] = ((- M21*(Kp*e1 - C12*state[3] - G11) + M11*(Kp*e2 - C21*state[1] - G21))/den)
+    dydx[3] = ((- M21*(sterowanie1 - C12*state[3] - G11) + M11*(sterowanie2 - C21*state[1] - G21))/den)
     
     return dydx
 
@@ -57,9 +84,9 @@ t = np.arange(0, 20, dt)
 
 # th1 i th2 są początkowymi kątami (stopnie)
 # w1 i w2 są początkowymi prędkościami kątowymi (stopnie na sekundę)
-th1 = 90
+th1 = 0.0
 w1 = 0.0
-th2 = 90
+th2 = 0.0
 w2 = 0.0
 
 # stan początkowy
