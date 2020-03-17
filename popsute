@@ -1,0 +1,133 @@
+import math
+from numpy import sin, cos
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.integrate as integrate
+import matplotlib.animation as animation
+
+G = 9.8 # przyspieszenie ziemskie
+L1 = 1.0 # długość członu pierwszego
+L2 = 0.5 # długość członu drugiego
+M1 = 0.5 # masa członu pierwszego
+M2 = 0.5 # masa członu drugiego
+
+Kp1 = 1.7 # wzmocnienie członu proporcjonalnego przegub 1
+Ki1 = 0.0 # wzmocnienie członu całkującego przegub 1
+Kd1 = 0.0 # wzmocnienie członu różniczukjącego przegub 1
+
+Kp2 = 1.7 # wzmocnienie członu proporcjonalnego przegub 2
+Ki2 = 0.0 # wzmocnienie członu całkującego przegub 2
+Kd2 = 0.0 # wzmocnienie członu różniczukjącego przegub 2
+
+th1_ = 300.0 # wartość zadana kąta przegubu pierwszego (stopnie)
+th2_ = 500.0 # wartość zadana kąta przegubu drugiego (stopnie)
+
+e1 = 0.0 # wartosc uchybu regulacji przegubu pierwszego
+e2 = 0.0 # wartosc uchybu regulacji przegubu drugiego
+
+uchyb_poprzedni1 = 0.0 # zmienna buforu uchybu pierwszego
+uchyb_poprzedni2 = 0.0 # zmienna buforu uchyba drugiego
+
+calka1 = 0.0
+calka2 = 0.0
+
+def derivs(state, t):
+
+    dydx = np. zeros_like(state)
+    
+    global calka1
+    global calka2
+    
+    # regulator PID przegubu pierwszego
+    e1 = th1_ - state[0]
+    calka1 = calka1 + e1*dt
+    pochodna1 = (e1 - uchyb_poprzedni1)/dt
+    sterowanie1 = Kp1*e1 + Ki1*calka1 + Kd1*pochodna1
+    uchyb_poprzedni_1 = e1
+
+
+    # regulator PID przegubu drugiego
+    e2 = th2_ - state[2]
+    calka2 = calka2 + e2*dt
+    pochodna2 = (e2 - uchyb_poprzedni2)/dt
+    sterowanie2 = Kp2*e2 + Ki2*calka2 + Kd2*pochodna2
+    uchyb_poprzedni_2 = e2
+ 
+    suma = state[0] + state[2]
+    
+    M11 = (M1 + M2)*L1**2 + M2*L2**2 + 2*M2*L1*L2*cos(state[2])
+    M12 = M2*L2**2 + M2*L1*L2*cos(state[2])
+    M21 = M2*L2**2 + M2*L1*L2*cos(state[2])
+    M22 = M2*L2**2
+
+    C12 = -2*M2*L1*L2*sin(state[2])*state[1]*state[3] - M2*L1*L2*sin(state[2])*state[3]*state[3]
+    C21 = M2*L1*L2*sin(state[2])*state[1]*state[1]
+
+    G11 = (M1+M2)*G*L1*sin(state[0]) + M2*G*L2*sin(suma)
+    G21 = M2*G*L2*sin(suma)
+
+    den = M11*M22 - M12*M21
+    
+    dydx[0] = state[1]
+
+    dydx[1] = (+ (M22/den)*(sterowanie1*state[0] - C12*state[3] - G11) - (M12/den)*(sterowanie2*state[2] - C21*state[1] - G21))
+    
+    dydx[2] = state[3]
+
+    dydx[3] = (- (M21/den)*(sterowanie1*state[0] - C12*state[3] - G11) + (M11/den)*(sterowanie2*state[2] - C21*state[1] - G21))
+    
+    return dydx
+
+
+# tworzenie tablicy czasu od 0..100 próbkowanej co 0.05 sekundy
+dt = 0.01
+t = np.arange(0, 20, dt)
+
+# th1 i th2 są początkowymi kątami (stopnie)
+# w1 i w2 są początkowymi prędkościami kątowymi (stopnie na sekundę)
+th1 = 5.0
+w1 = 5.0
+th2 = 5.0
+w2 = 5.0
+
+# stan początkowy
+state = np.radians([th1, w1, th2, w2])
+
+# integrate your ODE using scipy.integrate.
+y = integrate.odeint(derivs, state, t)
+
+x1 = L1*sin(y[:, 0])
+y1 = -L1*cos(y[:, 0])
+
+x2 = L2*sin(y[:, 2]) + x1
+y2 = -L2*cos(y[:, 2]) + y1
+
+fig = plt.figure()
+ax = fig.add_subplot(111, autoscale_on=False, xlim=(-2, 2), ylim=(-2, 2))
+ax.set_aspect('equal')
+ax.grid()
+
+line, = ax.plot([], [], 'o-', lw=2)
+time_template = 'time = %.1fs'
+time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+
+
+def init():
+    line.set_data([], [])
+    time_text.set_text('')
+    return line, time_text
+
+
+def animate(i):
+    thisx = [0, x1[i], x2[i]]
+    thisy = [0, y1[i], y2[i]]
+
+    line.set_data(thisx, thisy)
+    time_text.set_text(time_template % (i*dt))
+    return line, time_text
+
+
+ani = animation.FuncAnimation(fig, animate, range(1, len(y)),
+                              interval=dt*1000, blit=True, init_func=init)
+plt.show()
+
